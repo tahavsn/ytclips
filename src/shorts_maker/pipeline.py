@@ -57,6 +57,7 @@ def run(
     if transcript is None:
         transcript = transcribe.transcribe(video.path, settings.whisper, language=source_language)
         cache.save(t_name, transcript)
+    transcript = transcribe.resegment(transcript)
 
     # 3. Übersetzung
     subtitle_transcript = transcript

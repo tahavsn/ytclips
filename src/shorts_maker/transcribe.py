@@ -15,6 +15,24 @@ log = logging.getLogger(__name__)
 SAMPLE_RATE = 16000
 
 SENTENCE_END = (".", "!", "?", "…", "。", "！", "？")
+# Abkürzungen, deren Punkt kein Satzende ist (kleingeschrieben, ohne Punkt am Ende)
+ABBREVIATIONS = {
+    "mr", "mrs", "ms", "dr", "prof", "st", "jr", "sr", "vs", "etc", "e.g", "i.e", "no",
+    "z.b", "d.h", "u.a", "bzw", "ca", "nr", "evtl", "ggf", "inkl", "vgl", "bspw", "hr", "fr", "str",
+}
+CLOSING_QUOTES = "\"'»«“”)"
+
+
+def ends_sentence(text: str) -> bool:
+    """True, wenn `text` (Wort oder Segment) mit einem Satzende aufhört – Abkürzungen ausgenommen."""
+    stripped = text.rstrip().rstrip(CLOSING_QUOTES)
+    if not stripped.endswith(SENTENCE_END):
+        return False
+    if stripped.endswith("."):
+        last = stripped.split()[-1] if stripped.split() else ""
+        if last[:-1].lower() in ABBREVIATIONS:
+            return False
+    return True
 CLAUSE_END = (",", ";", ":", "–", "—")
 
 
@@ -90,8 +108,9 @@ def transcribe(path: Path, cfg: WhisperConfig, language: str | None = None) -> T
         raise TranscriptionError("Im Video wurde keine Sprache erkannt.")
 
     log.info("Erkannte Sprache: %s (p=%.2f), %d Segmente", info.language, info.language_probability, len(segments))
-    transcript = Transcript(language=info.language, duration=info.duration, segments=segments)
-    return resegment(transcript)
+    # Rohes Whisper-Ergebnis; die Neusegmentierung erfolgt in der Pipeline (resegment),
+    # damit Verbesserungen daran ohne erneute Transkription greifen.
+    return Transcript(language=info.language, duration=info.duration, segments=segments)
 
 
 def resegment(transcript: Transcript, max_duration: float = 7.0, max_chars: int = 84, pause: float = 0.8) -> Transcript:
@@ -128,7 +147,7 @@ def resegment(transcript: Transcript, max_duration: float = 7.0, max_chars: int 
                 flush()
         current.append(word)
         nxt = words[i + 1] if i + 1 < len(words) else None
-        if word.text.endswith(SENTENCE_END):
+        if ends_sentence(word.text):
             flush()
         elif (
             word.text.endswith(CLAUSE_END)

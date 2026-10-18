@@ -12,7 +12,7 @@ from pathlib import Path
 
 from .config import SubtitleConfig
 from .models import Transcript, Word
-from .transcribe import SENTENCE_END
+from .transcribe import ends_sentence
 
 # Wie lange eine Seite nach dem letzten Wort stehen bleibt (falls Platz bis zur nächsten)
 HOLD_AFTER = 0.4
@@ -97,7 +97,7 @@ def build_pages(words: list[Word], max_chars: int, max_lines: int, pause_break: 
     prev: Word | None = None
     for word in words:
         if prev is not None:
-            sentence_end = prev.text.rstrip("\"'»«“”)").endswith(SENTENCE_END)
+            sentence_end = ends_sentence(prev.text)
             if sentence_end or word.start - prev.end >= pause_break:
                 close_page()
         if line and line_len(line + [word]) > max_chars:

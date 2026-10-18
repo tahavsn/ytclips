@@ -12,10 +12,13 @@ Ablauf beim Tracking:
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 import statistics
+import sys
 import urllib.request
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -231,6 +234,29 @@ def detect_faces(video: Path, start: float, end: float, cfg: CropConfig, cache_r
     return samples
 
 
+@contextlib.contextmanager
+def _quiet_native_stderr() -> Iterator[None]:
+    """Unterdrückt die C++-Logausgaben von MediaPipe/LiteRT (außer bei --verbose)."""
+    if log.isEnabledFor(logging.DEBUG):
+        yield
+        return
+    try:
+        fd = sys.stderr.fileno()
+    except (AttributeError, OSError, ValueError):  # z. B. in Tests ohne echtes stderr
+        yield
+        return
+    sys.stderr.flush()
+    saved = os.dup(fd)
+    try:
+        with open(os.devnull, "w") as devnull:
+            os.dup2(devnull.fileno(), fd)
+            yield
+    finally:
+        sys.stderr.flush()
+        os.dup2(saved, fd)
+        os.close(saved)
+
+
 def plan_crop(video: Path, start: float, end: float, width: int, height: int, cfg: CropConfig,
               cache_root: Path) -> CropPlan:
     """Erstellt den Crop-Plan; fällt bei Problemen still auf Center-Crop zurück."""
@@ -238,7 +264,9 @@ def plan_crop(video: Path, start: float, end: float, width: int, height: int, cf
     if not cfg.face_tracking or plan.crop_w >= width:
         return plan
     try:
-        samples = detect_faces(video, start, end, cfg, cache_root)
+        _model_path(cache_root, cfg.face_model)  # Download außerhalb der Umleitung (Fehler sichtbar)
+        with _quiet_native_stderr():
+            samples = detect_faces(video, start, end, cfg, cache_root)
     except ImportError:
         log.warning("MediaPipe/OpenCV nicht installiert – nutze Center-Crop (pip install 'shorts-maker[face]').")
         return plan

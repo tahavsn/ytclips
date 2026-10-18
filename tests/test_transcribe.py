@@ -28,3 +28,19 @@ def test_resegment_respects_max_chars():
     out = resegment(t, max_chars=30)
     assert all(len(s.text) <= 30 for s in out.segments)
     assert sum(len(s.words) for s in out.segments) == 60
+
+
+def test_ends_sentence_ignores_abbreviations():
+    from shorts_maker.transcribe import ends_sentence
+
+    assert ends_sentence("Das war's.")
+    assert ends_sentence("Wirklich?“")
+    assert not ends_sentence("tell you, Mr.")
+    assert not ends_sentence("z.B.")
+    assert not ends_sentence("ohne Punkt")
+
+
+def test_resegment_does_not_split_after_abbreviation():
+    words = make_words("I must tell you, Mr. Otis, that the ghost exists.", 0.0)
+    t = Transcript(language="en", duration=10, segments=[Segment(start=0, end=5, text="x", words=words)])
+    assert [s.text for s in resegment(t).segments] == ["I must tell you, Mr. Otis, that the ghost exists."]

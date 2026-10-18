@@ -20,7 +20,7 @@ from . import llm
 from .config import ClipConfig, Settings
 from .errors import SelectionError
 from .models import ClipCandidate, Segment, Transcript
-from .transcribe import SENTENCE_END
+from .transcribe import ends_sentence
 
 log = logging.getLogger(__name__)
 
@@ -116,7 +116,7 @@ def _coerce(raw: SelectionResponse | dict[str, Any] | list | str) -> list[ClipSu
 
 
 def _ends_sentence(seg: Segment) -> bool:
-    return seg.text.rstrip().rstrip("\"'»«“”)").endswith(SENTENCE_END)
+    return ends_sentence(seg.text)
 
 
 def _span(segments: list[Segment], s: int, e: int) -> float:

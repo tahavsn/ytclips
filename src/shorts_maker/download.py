@@ -9,6 +9,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from .config import DownloadConfig
 from .errors import DependencyError, DownloadError
 from .models import VideoSource
 
@@ -68,28 +69,58 @@ def resolve_local(path: Path) -> VideoSource:
     return VideoSource(id=local_video_id(path), title=path.stem, path=path.resolve(), duration=info["duration"])
 
 
-def fetch_info(url: str) -> dict:
+JS_RUNTIMES = ("deno", "node", "bun")
+
+
+def ydl_options(cfg: DownloadConfig | None = None) -> dict:
+    """Gemeinsame yt-dlp-Optionen.
+
+    YouTube verlangt inzwischen das Lösen von JavaScript-Challenges; dafür nutzt yt-dlp
+    eine installierte JS-Runtime (deno/node/bun). Zusätzliche Player-Clients wie
+    `web_embedded` helfen, wenn YouTube die Standard-Clients mit "Sign in to confirm
+    you're not a bot" blockiert (häufig auf Servern/in der Cloud).
+    """
+    cfg = cfg or DownloadConfig()
+    opts: dict = {"quiet": True, "no_warnings": True, "noplaylist": True}
+    runtimes = {name: {} for name in JS_RUNTIMES if shutil.which(name)}
+    if runtimes:
+        opts["js_runtimes"] = runtimes
+    if cfg.player_clients:
+        opts["extractor_args"] = {"youtube": {"player_client": list(cfg.player_clients)}}
+    if cfg.cookies_file:
+        opts["cookiefile"] = str(cfg.cookies_file)
+    if cfg.cookies_from_browser:
+        opts["cookiesfrombrowser"] = (cfg.cookies_from_browser,)
+    return opts
+
+
+def fetch_info(url: str, cfg: DownloadConfig | None = None) -> dict:
     try:
         import yt_dlp
     except ImportError as exc:  # pragma: no cover - Pflichtabhängigkeit
         raise DependencyError("yt-dlp ist nicht installiert.", hint="pip install yt-dlp") from exc
 
-    opts = {"quiet": True, "no_warnings": True, "noplaylist": True}
     try:
-        with yt_dlp.YoutubeDL(opts) as ydl:
+        with yt_dlp.YoutubeDL(ydl_options(cfg)) as ydl:
             return ydl.extract_info(url, download=False)
     except yt_dlp.utils.DownloadError as exc:
+        bot = "not a bot" in str(exc)
         raise DownloadError(
             f"Video-Infos konnten nicht geladen werden: {exc}",
-            hint="Prüfe die URL und deine Internetverbindung; ggf. 'pip install -U yt-dlp'.",
+            hint=(
+                "YouTube blockiert diese IP. Setze download.cookies_from_browser (z. B. 'firefox') "
+                "oder download.cookies_file in der config.yaml."
+                if bot
+                else "Prüfe die URL und deine Internetverbindung; ggf. 'pip install -U \"yt-dlp[default]\"'."
+            ),
         ) from exc
 
 
-def download(url: str, target_dir: Path, info: dict | None = None) -> VideoSource:
+def download(url: str, target_dir: Path, info: dict | None = None, cfg: DownloadConfig | None = None) -> VideoSource:
     """Lädt das Video in bester Qualität (Video+Audio, als MP4 gemuxt) nach target_dir/source.mp4."""
     import yt_dlp
 
-    info = info or fetch_info(url)
+    info = info or fetch_info(url, cfg)
     target_dir.mkdir(parents=True, exist_ok=True)
     target = target_dir / "source.mp4"
     source = VideoSource(
@@ -100,13 +131,10 @@ def download(url: str, target_dir: Path, info: dict | None = None) -> VideoSourc
         return source
 
     log.info("Lade '%s' herunter …", source.title)
-    opts = {
+    opts = ydl_options(cfg) | {
         "format": "bv*+ba/b",
         "merge_output_format": "mp4",
         "outtmpl": str(target_dir / "source.%(ext)s"),
-        "noplaylist": True,
-        "quiet": True,
-        "no_warnings": True,
         "noprogress": True,
     }
     try:
@@ -133,10 +161,10 @@ def _remux_to_mp4(src: Path, dst: Path) -> None:
     src.unlink(missing_ok=True)
 
 
-def get_source(source: str, cache_root: Path) -> VideoSource:
+def get_source(source: str, cache_root: Path, cfg: DownloadConfig | None = None) -> VideoSource:
     """Einstiegspunkt: URL -> Download in den Cache, Pfad -> lokale Datei."""
     ensure_ffmpeg()
     if is_url(source):
-        info = fetch_info(source)
-        return download(source, cache_root / info["id"], info)
+        info = fetch_info(source, cfg)
+        return download(source, cache_root / info["id"], info, cfg)
     return resolve_local(Path(source).expanduser())

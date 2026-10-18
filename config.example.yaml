@@ -1,6 +1,11 @@
 # Beispielkonfiguration – als config.yaml speichern oder per --config angeben.
 # Alle Werte sind optional; nicht gesetzte Werte nutzen die Defaults.
 
+download:
+  player_clients: [default, web_embedded]
+  cookies_file: null          # cookies.txt (Netscape-Format), falls YouTube "not a bot" meldet
+  cookies_from_browser: null  # oder z. B. firefox / chrome
+
 whisper:
   model: large-v3        # tiny, base, small, medium, large-v3, ...
   device: auto           # auto, cpu, cuda

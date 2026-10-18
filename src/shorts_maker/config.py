@@ -18,6 +18,13 @@ log = logging.getLogger(__name__)
 DEFAULT_CONFIG_FILES = ("config.yaml", "config.yml")
 
 
+class DownloadConfig(BaseModel):
+    # "default" = Standard-Clients von yt-dlp; "web_embedded" hilft gegen die Bot-Sperre
+    player_clients: list[str] = ["default", "web_embedded"]
+    cookies_file: Path | None = None
+    cookies_from_browser: str | None = None  # z. B. "firefox", "chrome"
+
+
 class WhisperConfig(BaseModel):
     model: str = "large-v3"
     device: str = "auto"
@@ -100,6 +107,7 @@ class ExportConfig(BaseModel):
 
 
 class Settings(BaseModel):
+    download: DownloadConfig = DownloadConfig()
     whisper: WhisperConfig = WhisperConfig()
     llm: LLMConfig = LLMConfig()
     clips: ClipConfig = ClipConfig()

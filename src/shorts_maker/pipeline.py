@@ -46,7 +46,7 @@ def run(
 ) -> Path:
     """Führt die komplette Pipeline aus und gibt den Pfad zu clips.json zurück."""
     # 1. Download / lokale Datei
-    video = download.get_source(source, settings.cache_dir)
+    video = download.get_source(source, settings.cache_dir, settings.download)
     cache = Cache(settings.cache_dir, video.id, enabled=use_cache)
     info = download.probe(video.path)
     log.info("Quelle: %s (%dx%d, %.0f s)", video.title, info["width"], info["height"], info["duration"])

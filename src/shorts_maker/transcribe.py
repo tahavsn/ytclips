@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import subprocess
 from pathlib import Path
 
 from .config import WhisperConfig
@@ -10,6 +11,8 @@ from .errors import DependencyError, TranscriptionError
 from .models import Segment, Transcript, Word
 
 log = logging.getLogger(__name__)
+
+SAMPLE_RATE = 16000
 
 SENTENCE_END = (".", "!", "?", "…", "。", "！", "？")
 CLAUSE_END = (",", ";", ":", "–", "—")
@@ -30,6 +33,23 @@ def _device_and_type(cfg: WhisperConfig) -> tuple[str, str]:
     return device, compute
 
 
+def load_audio(path: Path, sample_rate: int = SAMPLE_RATE):
+    """Dekodiert die Audiospur per ffmpeg zu Mono-float32 (unabhängig von PyAV-Versionen)."""
+    import numpy as np
+
+    cmd = [
+        "ffmpeg", "-nostdin", "-v", "error", "-i", str(path),
+        "-vn", "-ac", "1", "-ar", str(sample_rate), "-f", "f32le", "-",
+    ]
+    proc = subprocess.run(cmd, capture_output=True)
+    if proc.returncode != 0:
+        raise TranscriptionError(f"Audio konnte nicht dekodiert werden: {proc.stderr.decode(errors='replace').strip()}")
+    audio = np.frombuffer(proc.stdout, dtype=np.float32)
+    if audio.size == 0:
+        raise TranscriptionError("Das Video enthält keine Audiospur.")
+    return audio
+
+
 def transcribe(path: Path, cfg: WhisperConfig, language: str | None = None) -> Transcript:
     """Transkribiert die Audiospur; Sprache wird automatisch erkannt, wenn language=None."""
     try:
@@ -48,10 +68,11 @@ def transcribe(path: Path, cfg: WhisperConfig, language: str | None = None) -> T
             "Mit --whisper-model small geht es schneller.",
         ) from exc
 
-    log.info("Transkribiere %s …", path.name)
+    audio = load_audio(path)
+    log.info("Transkribiere %s (%.0f s Audio) …", path.name, audio.size / SAMPLE_RATE)
     try:
         raw_segments, info = model.transcribe(
-            str(path),
+            audio,
             language=language,
             word_timestamps=True,
             vad_filter=cfg.vad_filter,

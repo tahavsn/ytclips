@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Secrets
+.env
+
+# Ausgaben, Cache, Modelle
+out/
+output/
+.cache/
+cache/
+models/
+*.tflite
+*.pt
+*.bin
+
+# Medien
+*.mp4
+*.mkv
+*.webm
+*.m4a
+*.wav
+!tests/fixtures/*

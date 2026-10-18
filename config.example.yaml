@@ -1,0 +1,46 @@
+# Beispielkonfiguration – als config.yaml speichern oder per --config angeben.
+# Alle Werte sind optional; nicht gesetzte Werte nutzen die Defaults.
+
+whisper:
+  model: large-v3        # tiny, base, small, medium, large-v3, ...
+  device: auto           # auto, cpu, cuda
+  compute_type: auto     # auto, int8, float16, ...
+
+llm:
+  model: claude-opus-5-5
+  translate_effort: medium
+  select_effort: high
+
+clips:
+  count: 5
+  min_seconds: 30
+  max_seconds: 60
+
+subtitles:
+  font: "Arial"            # z. B. "Montserrat ExtraBold", falls installiert
+  fonts_dir: null        # Ordner mit eigenen .ttf/.otf-Dateien
+  font_size: 82
+  uppercase: false
+  text_color: "#FFFFFF"
+  highlight_color: "#FFE400"
+  outline_color: "#000000"
+  outline: 6
+  shadow: 2
+  margin_v: 480          # Abstand vom unteren Rand (px bei 1920 Höhe) -> unteres Drittel
+  max_chars_per_line: 20 # Anzeige im Video (große Schrift, 9:16)
+  max_lines: 2
+
+translation:
+  max_chars_per_line: 42 # Lesbarkeitsregel für die Übersetzung
+  max_lines: 2
+
+crop:
+  face_tracking: true
+  sample_fps: 4
+
+export:
+  crf: 20
+  preset: medium
+  fps: 30
+  audio_bitrate: 160k
+  loudnorm: true

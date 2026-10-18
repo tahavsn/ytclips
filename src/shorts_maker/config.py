@@ -82,6 +82,7 @@ class TranslationConfig(BaseModel):
 
 class CropConfig(BaseModel):
     face_tracking: bool = True
+    face_model: str = "full"  # "full" (auch kleine Gesichter) oder "short" (Nahaufnahmen)
     sample_fps: float = 4.0
     # Kamera bewegt sich erst, wenn das Gesicht so weit (Anteil der Bildbreite) abweicht
     deadzone: float = 0.08

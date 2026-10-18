@@ -36,6 +36,7 @@ translation:
 
 crop:
   face_tracking: true
+  face_model: full       # full = auch kleine Gesichter, short = Nahaufnahmen
   sample_fps: 4
 
 export:

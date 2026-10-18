@@ -116,10 +116,11 @@ class Settings(BaseModel):
 
 
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
+    """Merged `override` in `base`; None-Werte (nicht gesetzte CLI-Optionen) werden ignoriert."""
     out = dict(base)
     for key, value in override.items():
-        if isinstance(value, dict) and isinstance(out.get(key), dict):
-            out[key] = _deep_merge(out[key], value)
+        if isinstance(value, dict):
+            out[key] = _deep_merge(out[key] if isinstance(out.get(key), dict) else {}, value)
         elif value is not None:
             out[key] = value
     return out

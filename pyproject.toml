@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.11"
-authors = [{ name = "ytclips contributors" }]
+authors = [{ name = "Taha Bisgin" }]
 keywords = ["youtube", "shorts", "tiktok", "reels", "whisper", "subtitles", "claude"]
 classifiers = [
     "Programming Language :: Python :: 3",

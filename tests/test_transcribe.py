@@ -1,5 +1,5 @@
-from shorts_maker.models import Segment, Transcript
-from shorts_maker.transcribe import resegment
+from ytclips.models import Segment, Transcript
+from ytclips.transcribe import resegment
 
 from .conftest import make_words
 
@@ -31,7 +31,7 @@ def test_resegment_respects_max_chars():
 
 
 def test_ends_sentence_ignores_abbreviations():
-    from shorts_maker.transcribe import ends_sentence
+    from ytclips.transcribe import ends_sentence
 
     assert ends_sentence("Das war's.")
     assert ends_sentence("Wirklich?“")

@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from shorts_maker.config import ExportConfig, SubtitleConfig
-from shorts_maker.crop import center_plan
-from shorts_maker.export import build_command
-from shorts_maker.pipeline import slugify
+from ytclips.config import ExportConfig, SubtitleConfig
+from ytclips.crop import center_plan
+from ytclips.export import build_command
+from ytclips.pipeline import slugify
 
 
 def test_build_command_contains_all_stages():

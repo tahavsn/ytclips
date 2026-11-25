@@ -1,7 +1,7 @@
 import pytest
 
-from shorts_maker.config import load_settings
-from shorts_maker.errors import ShortsMakerError
+from ytclips.config import load_settings
+from ytclips.errors import YtclipsError
 
 
 def test_cli_overrides_without_config_file_ignore_none(tmp_path, monkeypatch):
@@ -25,10 +25,10 @@ def test_yaml_and_overrides_are_merged(tmp_path, monkeypatch):
 def test_invalid_values_raise_readable_error(tmp_path):
     cfg = tmp_path / "c.yaml"
     cfg.write_text("clips:\n  min_seconds: 90\n  max_seconds: 60\n", encoding="utf-8")
-    with pytest.raises(ShortsMakerError, match="Ungültige Konfiguration"):
+    with pytest.raises(YtclipsError, match="Ungültige Konfiguration"):
         load_settings(cfg)
 
 
 def test_missing_config_file(tmp_path):
-    with pytest.raises(ShortsMakerError, match="nicht gefunden"):
+    with pytest.raises(YtclipsError, match="nicht gefunden"):
         load_settings(tmp_path / "fehlt.yaml")

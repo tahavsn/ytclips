@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from shorts_maker.models import Segment, Transcript, Word
+from ytclips.models import Segment, Transcript, Word
 
 
 def make_words(text: str, start: float = 0.0, step: float = 0.4) -> list[Word]:

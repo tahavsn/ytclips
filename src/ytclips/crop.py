@@ -268,7 +268,7 @@ def plan_crop(video: Path, start: float, end: float, width: int, height: int, cf
         with _quiet_native_stderr():
             samples = detect_faces(video, start, end, cfg, cache_root)
     except ImportError:
-        log.warning("MediaPipe/OpenCV nicht installiert – nutze Center-Crop (pip install 'shorts-maker[face]').")
+        log.warning("MediaPipe/OpenCV nicht installiert – nutze Center-Crop (pip install 'ytclips[face]').")
         return plan
     except Exception as exc:  # Modell-Download, Codec-Probleme, …
         log.warning("Gesichtstracking fehlgeschlagen (%s) – nutze Center-Crop.", exc)

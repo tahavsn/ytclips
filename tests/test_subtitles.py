@@ -1,8 +1,8 @@
 import pytest
 
-from shorts_maker.config import SubtitleConfig
-from shorts_maker.models import Transcript
-from shorts_maker.subtitles import (
+from ytclips.config import SubtitleConfig
+from ytclips.models import Transcript
+from ytclips.subtitles import (
     build_pages,
     clip_words,
     escape_text,

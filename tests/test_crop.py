@@ -1,4 +1,4 @@
-from shorts_maker.crop import CropPlan, center_plan, crop_size, fill_gaps, smooth_track
+from ytclips.crop import CropPlan, center_plan, crop_size, fill_gaps, smooth_track
 
 
 def test_crop_size_landscape_and_portrait():

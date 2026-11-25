@@ -2,9 +2,9 @@ import json
 
 import pytest
 
-from shorts_maker.config import ClipConfig
-from shorts_maker.errors import SelectionError
-from shorts_maker.select import (
+from ytclips.config import ClipConfig
+from ytclips.errors import SelectionError
+from ytclips.select import (
     SelectionResponse,
     align_clip,
     build_prompt,

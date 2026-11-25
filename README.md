@@ -1,4 +1,4 @@
-# shorts-maker
+# ytclips
 
 Open-Source-Tool, das YouTube-Videos (oder lokale Videodateien) automatisch in **vertikale Short-Clips
 (9:16, 1080×1920)** mit **eingebrannten deutschen Untertiteln** im TikTok-Stil umwandelt – fertig für
@@ -75,7 +75,7 @@ funktioniert, ist aber langsam – für schnelle Tests `--whisper-model small` v
 ## Nutzung
 
 ```bash
-shorts-maker run <youtube-url|datei> [OPTIONEN]
+ytclips run <youtube-url|datei> [OPTIONEN]
 ```
 
 | Option | Beschreibung | Standard |
@@ -97,16 +97,16 @@ shorts-maker run <youtube-url|datei> [OPTIONEN]
 
 ```bash
 # 5 Clips mit deutschen Untertiteln aus einem englischen Video
-shorts-maker run "https://www.youtube.com/watch?v=VIDEO_ID" --clips 5 --lang de --output ./out
+ytclips run "https://www.youtube.com/watch?v=VIDEO_ID" --clips 5 --lang de --output ./out
 
 # Lokale Datei, 3 kurze Clips, schnelles Whisper-Modell
-shorts-maker run ./podcast.mp4 -n 3 --min-len 20 --max-len 40 --whisper-model small
+ytclips run ./podcast.mp4 -n 3 --min-len 20 --max-len 40 --whisper-model small
 
 # Eigene Optik über eine Konfigurationsdatei
-shorts-maker run "https://youtu.be/VIDEO_ID" -c config.yaml
+ytclips run "https://youtu.be/VIDEO_ID" -c config.yaml
 
 # Komplett offline (ohne API-Key): Heuristik statt Claude, Untertitel in Originalsprache
-shorts-maker run ./video.mp4 --selector heuristic --no-translate
+ytclips run ./video.mp4 --selector heuristic --no-translate
 ```
 
 ### Ausgabe
@@ -189,7 +189,7 @@ Segment auf mehrere kurze „Seiten“ verteilt.
 | `crop.py` | MediaPipe-Gesichtserkennung mit 4 fps, Median-Glättung und Deadzone-Kamera → zeitabhängige ffmpeg-`crop`-Expression |
 | `subtitles.py` | Wörter → Seiten (≤ 2 Zeilen) → ein ASS-Event pro Wort mit hervorgehobenem aktivem Wort |
 | `export.py` | ein ffmpeg-Durchlauf: Schnitt, Crop, Skalierung auf 1080×1920, Untertitel einbrennen, Encoding |
-| `pipeline.py` | verbindet alles, nutzt den Cache in `.cache/shorts_maker/<video-id>/` |
+| `pipeline.py` | verbindet alles, nutzt den Cache in `.cache/ytclips/<video-id>/` |
 
 Claude wird als `claude-opus-5-5` mit adaptivem Thinking und Structured Outputs angesprochen. Falls
 eine Anfrage von den Sicherheitsklassifikatoren abgelehnt wird, übernimmt serverseitig automatisch ein

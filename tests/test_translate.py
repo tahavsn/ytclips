@@ -1,6 +1,6 @@
-from shorts_maker.config import Settings
-from shorts_maker.models import Segment, Transcript, Word
-from shorts_maker.translate import TranslatedLine, TranslationBatch, distribute_words, translate
+from ytclips.config import Settings
+from ytclips.models import Segment, Transcript, Word
+from ytclips.translate import TranslatedLine, TranslationBatch, distribute_words, translate
 
 from .conftest import make_segment
 
@@ -45,7 +45,7 @@ class FakeLLM:
 
 def test_translate_keeps_timestamps_and_retries_missing(monkeypatch):
     fake = FakeLLM()
-    monkeypatch.setattr("shorts_maker.translate.llm.structured", fake)
+    monkeypatch.setattr("ytclips.translate.llm.structured", fake)
     t = Transcript(language="en", duration=10, segments=[make_segment("one two", 0), make_segment("three four", 2)])
     out = translate(t, Settings(), client=object())
     assert out.language == "de"

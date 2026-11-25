@@ -1,4 +1,4 @@
-"""Kommandozeile: `shorts-maker run <url|datei> --clips 5 --lang de --output ./out`."""
+"""Kommandozeile: `ytclips run <url|datei> --clips 5 --lang de --output ./out`."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from rich.table import Table
 
 from . import __version__
 from .config import load_settings
-from .errors import ShortsMakerError
+from .errors import YtclipsError
 
 app = typer.Typer(
     add_completion=False,
@@ -37,7 +37,7 @@ def _setup_logging(verbose: bool) -> None:
 
 def _version(value: bool) -> None:
     if value:
-        typer.echo(f"shorts-maker {__version__}")
+        typer.echo(f"ytclips {__version__}")
         raise typer.Exit()
 
 
@@ -47,7 +47,7 @@ def main(
         Optional[bool], typer.Option("--version", callback=_version, is_eager=True, help="Version anzeigen.")
     ] = None,
 ) -> None:
-    """shorts-maker"""
+    """ytclips"""
 
 
 @app.command()
@@ -97,7 +97,7 @@ def run(
             selector=selector,
             source_language=source_lang,
         )
-    except ShortsMakerError as exc:
+    except YtclipsError as exc:
         console.print(f"[bold red]Fehler:[/] {exc}")
         if exc.hint:
             console.print(f"[yellow]Tipp:[/] {exc.hint}")

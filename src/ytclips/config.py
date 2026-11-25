@@ -11,7 +11,7 @@ import yaml
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
 
-from .errors import ShortsMakerError
+from .errors import YtclipsError
 
 log = logging.getLogger(__name__)
 
@@ -116,7 +116,7 @@ class Settings(BaseModel):
     crop: CropConfig = CropConfig()
     export: ExportConfig = ExportConfig()
     target_language: str = "de"
-    cache_dir: Path = Path(".cache/shorts_maker")
+    cache_dir: Path = Path(".cache/ytclips")
 
     @property
     def anthropic_api_key(self) -> str | None:
@@ -143,16 +143,16 @@ def load_settings(config_path: Path | None = None, overrides: dict[str, Any] | N
     if path is None:
         path = next((Path(p) for p in DEFAULT_CONFIG_FILES if Path(p).is_file()), None)
     elif not path.is_file():
-        raise ShortsMakerError(f"Konfigurationsdatei nicht gefunden: {path}")
+        raise YtclipsError(f"Konfigurationsdatei nicht gefunden: {path}")
 
     if path is not None:
         log.debug("Lade Konfiguration aus %s", path)
         try:
             loaded = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         except yaml.YAMLError as exc:
-            raise ShortsMakerError(f"{path} ist kein gültiges YAML: {exc}") from exc
+            raise YtclipsError(f"{path} ist kein gültiges YAML: {exc}") from exc
         if not isinstance(loaded, dict):
-            raise ShortsMakerError(f"{path} muss ein YAML-Mapping enthalten.")
+            raise YtclipsError(f"{path} muss ein YAML-Mapping enthalten.")
         data = loaded
 
     if overrides:
@@ -161,4 +161,4 @@ def load_settings(config_path: Path | None = None, overrides: dict[str, Any] | N
     try:
         return Settings.model_validate(data)
     except ValidationError as exc:
-        raise ShortsMakerError(f"Ungültige Konfiguration:\n{exc}") from exc
+        raise YtclipsError(f"Ungültige Konfiguration:\n{exc}") from exc
